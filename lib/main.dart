@@ -3,6 +3,8 @@ import 'package:provider/provider.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 import './ui/screen.dart';
+import './models/auth_token.dart';
+
 
 // void main() {
 //   runApp(const MyApp());
@@ -25,8 +27,15 @@ class MyApp extends StatelessWidget {
           ChangeNotifierProvider(
             create: (context) => AuthManager(),
           ),
-          ChangeNotifierProvider(
+          ChangeNotifierProxyProvider<AuthManager, ProductManger>(
+            // create: (ctx) => ProductManger(),
             create: (ctx) => ProductManger(),
+            update: (ctx, authManager, productsManager) {
+              // Khi authManager có báo hiệu thay đổi thì đọc lại authToken
+              // cho productManager
+              productsManager!.authToken = authManager.authToken;
+              return productsManager;
+            },
           ),
           ChangeNotifierProvider(
             create: (ctx) => CartManager(),

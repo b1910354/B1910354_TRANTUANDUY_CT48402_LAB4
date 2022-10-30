@@ -10,9 +10,13 @@ class UserProductsScreen extends StatelessWidget {
 
   const UserProductsScreen({super.key});
 
+  Future<void> _refreshProducts(BuildContext context) async {
+    await context.read<ProductManger>().fetchProducts(true);
+  }
+
   @override
   Widget build(BuildContext context) {
-    final productManager = ProductManger();
+    // final productManager = ProductManger();
 
     return Scaffold(
       appBar: AppBar(
@@ -22,14 +26,24 @@ class UserProductsScreen extends StatelessWidget {
         ],
       ),
       drawer: const AppDrawer(),
-      body: RefreshIndicator(
-        onRefresh: () async => print('refresh products'),
-        child: builUserProductListView(productManager),
-      ),
+      body: FutureBuilder(
+        future: _refreshProducts(context),
+        builder: (ctx, snapshot) {
+          if(snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(
+              child: CircularProgressIndicator(),
+            );
+          }
+          return RefreshIndicator(
+            onRefresh: () => _refreshProducts(context),
+            child: builUserProductListView(),
+          );
+        },
+      )
     );
   }
 
-  Widget builUserProductListView(ProductManger productsManager) {
+  Widget builUserProductListView() {
     return Consumer<ProductManger>(
       builder: (ctx, productManger, child) {
         return ListView.builder(
